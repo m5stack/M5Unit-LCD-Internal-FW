@@ -3,6 +3,29 @@
 
 # M5Stack Unit LCD
 
+## How to update
+
+[ The update program ](../examples/FirmwareUpdater/FirmwareUpdater.ino) can be found in the examples/FirmwareUpdater/ of this repository.  
+[ The M5GFX library ](https://github.com/m5stack/M5GFX) is required to run the update program.  
+The update program can be run on the following products.  
+ - M5Stack BASIC / GRAY / GO / FIRE
+ - M5Stack Core2 / Tough
+ - M5Stack CoreInk
+ - M5Stick C / CPlus
+ - M5Paper
+ - M5ATOM
+
+
+Write the update program to one of the above using the ArduinoIDE and connect the Unit.  
+The update will start automatically.  
+It is successful when the progress bar reaches the end.  
+If a communication error occurs during the update, it will be interrupted.  
+After a certain period of time, the update will start again.  
+After it is successful, please remove the Unit.  
+
+
+---
+
 ## About Unit LCD
 
  - Unit LCD is an I2C unit with ESP32 and ST7789V2.

@@ -1,3 +1,6 @@
+//! Copyright (c) M5Stack. All rights reserved.
+//! Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 #include <cstdint>
 
 static constexpr std::uint32_t logo_len = 11078;

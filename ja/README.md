@@ -3,6 +3,28 @@
 
 # M5Stack Unit LCD
 
+## アップデート方法
+
+[ アップデートプログラム ](../examples/FirmwareUpdater/FirmwareUpdater.ino)は、このリポジトリの examples/FirmwareUpdater/ にあります。  
+アップデートプログラムの実行には[ M5GFXライブラリ ](https://github.com/m5stack/M5GFX)が必要です。  
+アップデートプログラムは以下の製品で実行できます。  
+ - M5Stack BASIC / GRAY / GO / FIRE
+ - M5Stack Core2 / Tough
+ - M5Stack CoreInk
+ - M5Stick C / CPlus
+ - M5Paper
+ - M5ATOM
+
+
+アップデートプログラムをArduinoIDEで上記のどれかに書込み、Unitを接続してください。  
+自動的にアップデートが開始されます。  
+プログレスバーが最後まで進むと成功です。  
+アップデート中に通信エラーが発生した場合は中断します。  
+一定時間経過すると再びアップデートが始まります。成功した後はUnitを取り外してください。  
+
+
+---
+
 ## Unit LCD について
 
  - Unit LCD は ESP32 と ST7789V2 を搭載した I2Cユニットです。
