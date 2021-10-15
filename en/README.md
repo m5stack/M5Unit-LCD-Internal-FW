@@ -76,6 +76,7 @@ After it is successful, please remove the Unit.
 |0x36|  2 |ROTATE       |Set drawing orientation<br>0:Normal / 1:90° / 2:180° / 3:270°<br>4-7:flips 0-3 upside down|[0] 0x36<br>[1] Setting value  (0-7)|
 |0x38|  2 |SET_POWER    |Operating speed setting<br>(power consumption setting)<br>0:Low speed / 1:Normal / 2:High speed|[0] 0x38<br>[1] Setting value  (0-2)|
 |0x39|  2 |SET_SLEEP    |LCD panel sleep setting<br>0:wake up / 1:sleep|[0] 0x39<br>[1] Setting value  (0-1)|
+|0x3A|  2 |SET_BYTESWAP |Byte swap setting for color data<br>0:disable(default) / 1:enable|[0] 0x3A<br>[1] Setting value (0-1)|
 |0x41|2-∞|WRITE_RAW_8  |draw image RGB332                       |[0] 0x41<br>[1] RGB332<br>until [1] communication STOP.
 |0x42|3-∞|WRITE_RAW_16 |draw image RGB565                       |[0] 0x42<br>[1-2] RGB565<br>until [1-2] communication STOP.
 |0x43|4-∞|WRITE_RAW_24 |draw image RGB888                       |[0] 0x43<br>[1-3] RGB888<br>until [1-3] communication STOP.

@@ -59,7 +59,8 @@ namespace command_processor
   lgfx::Bus_SPI _spi_bus;
   LGFX_Device _lcd;
   LGFX_Sprite _canvas;
-  
+  bool _byteswap = false;
+
   bool _modified = true;
   bool _nvs_push = false;
 
@@ -123,13 +124,27 @@ namespace command_processor
 
   static void IRAM_ATTR update_argb8888(const std::uint8_t* data, std::size_t len)
   {
-    switch (len)
+    if (_byteswap)
     {
-      default: return;
-      case 1: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint8_t ) data[0]);                          return;
-      case 2: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint16_t)(data[0]<< 8|data[1]));             return;
-      case 3: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint32_t)(data[0]<<16|data[1]<<8|data[2]));  return;
-      case 4: _argb8888 = data[0] << 24 | lgfx::convert_to_rgb888((std::uint32_t)(data[1]<<16|data[2]<<8|data[3]));  return;
+      switch (len)
+      {
+        default: return;
+        case 1: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint8_t ) data[0]);                          return;
+        case 2: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint16_t)(data[1]<< 8|data[0]));             return;
+        case 3: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint32_t)(data[2]<<16|data[1]<<8|data[0]));  return;
+        case 4: _argb8888 = data[3] << 24 | lgfx::convert_to_rgb888((std::uint32_t)(data[2]<<16|data[1]<<8|data[0]));  return;
+      }
+    }
+    else
+    {
+      switch (len)
+      {
+        default: return;
+        case 1: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint8_t ) data[0]);                          return;
+        case 2: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint16_t)(data[0]<< 8|data[1]));             return;
+        case 3: _argb8888 =   0xFF  << 24 | lgfx::convert_to_rgb888((std::uint32_t)(data[0]<<16|data[1]<<8|data[2]));  return;
+        case 4: _argb8888 = data[0] << 24 | lgfx::convert_to_rgb888((std::uint32_t)(data[1]<<16|data[2]<<8|data[3]));  return;
+      }
     }
   }
 
@@ -214,6 +229,19 @@ namespace command_processor
     case lgfx::Panel_M5UnitLCD::CMD_INVOFF:
       ESP_LOGI(LOGNAME, "CMD INV OFF");
       _lcd.invertDisplay(false);
+      break;
+
+    case lgfx::Panel_M5UnitLCD::CMD_SET_BYTESWAP:
+      if (params[1] == 0)
+      {
+        _byteswap = false;
+        ESP_LOGI(LOGNAME, "BYTESWAP OFF");
+      }
+      else
+      {
+        _byteswap = true;
+        ESP_LOGI(LOGNAME, "BYTESWAP ON");
+      }
       break;
 
     case lgfx::Panel_M5UnitLCD::CMD_SET_SLEEP:
@@ -496,7 +524,7 @@ namespace command_processor
       cfg.spi_host = VSPI_HOST;
       cfg.dma_channel = 2;
       cfg.freq_write = 40000000;
-      cfg.freq_read  = 16000000;
+      cfg.freq_read  = 14000000;
       cfg.pin_mosi = 15;
       cfg.pin_miso = 14;
       cfg.pin_sclk = 13;
@@ -643,6 +671,7 @@ memset((std::uint8_t*)_canvas.getBuffer() + bf, 0, RX_BUFFER_MAX - bf + 1);
       case lgfx::Panel_M5UnitLCD::CMD_ROTATE:
       case lgfx::Panel_M5UnitLCD::CMD_SET_POWER:
       case lgfx::Panel_M5UnitLCD::CMD_SET_SLEEP:
+      case lgfx::Panel_M5UnitLCD::CMD_SET_BYTESWAP:
         _param_need_count = 2;
         return false;
 
@@ -924,9 +953,18 @@ memset((std::uint8_t*)_canvas.getBuffer() + bf, 0, RX_BUFFER_MAX - bf + 1);
         std::size_t bytes = _last_command & 3;
         switch (bytes)
         {
-          case 2: res = lgfx::convert_bgr888_to_swap565(res); break;
-          case 1: res = lgfx::convert_bgr888_to_rgb332(res); break;
+          case 2: res = lgfx::color_convert<lgfx::swap565_t, lgfx::bgr888_t>(res); break;
+          case 1: res = lgfx::color_convert<lgfx::rgb332_t, lgfx::bgr888_t>(res); break;
           default: break;
+        }
+        if (_byteswap)
+        {
+          switch (bytes)
+          {
+            case 3: res = lgfx::getSwap24(res); break;
+            case 2: res = lgfx::getSwap16(res); break;
+            default: break;
+          }
         }
         i2c_slave::add_txdata((std::uint8_t*)&res, bytes);
         if (++_read_xptr > _read_xe)

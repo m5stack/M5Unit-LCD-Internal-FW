@@ -184,17 +184,45 @@ void setup(void)
 
 void loop(void)
 {
-  display.startWrite();
-  if (update())
+  auto panel = (lgfx::Panel_M5UnitLCD*)display2.getPanel();
+  auto bus = (lgfx::Bus_I2C*) panel->getBus();
+  auto cfg = bus->config();
+
+  std::uint8_t buf[4] = { 0x04 };
+
+  if (lgfx::i2c::beginTransaction(cfg.i2c_port, cfg.i2c_addr, 400000).has_value()
+   && lgfx::i2c::writeBytes(cfg.i2c_port, buf, 1).has_value()
+   && lgfx::i2c::restart(cfg.i2c_port, cfg.i2c_addr, 400000, true).has_value()
+   && lgfx::i2c::readBytes(cfg.i2c_port, buf, 4).has_value()
+   && lgfx::i2c::endTransaction(cfg.i2c_port).has_value())
   {
-    display.drawString("success", 0, 56);
-    Serial.println("success");
+    Serial.printf("found : device_id : %02x %02x %02x %02x\r\n", buf[0], buf[1], buf[2], buf[3]);
+
+    if (buf[0] == DEVICE_ID_0
+     && buf[1] == DEVICE_ID_1)
+    {
+      if (buf[2] != MAJOR_VER
+       || buf[3] != MINOR_VER)
+      {
+        display.startWrite();
+        if (update())
+        {
+          display.drawString("success", 0, 56);
+          Serial.println("success");
+        }
+        else
+        {
+          display.drawString("fail", 0, 56);
+          Serial.println("fail");
+        }
+        display.endWrite();
+        delay(8192);
+      }
+      else
+      {
+        Serial.println("updated.");
+        delay(2048);
+      }
+    }
   }
-  else
-  {
-    display.drawString("fail", 0, 56);
-    Serial.println("fail");
-  }
-  display.endWrite();
-  delay(8192);
 }
