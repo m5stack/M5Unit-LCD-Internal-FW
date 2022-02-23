@@ -159,8 +159,11 @@ bool searchUnitLCD(void)
     }
     if (display2.init(32, 33)) return true;
   }
-  if (display2.init(26, 32)) return true; // ATOM
-  if (display2.init( 4, 13)) return true; // TimerCam
+  else
+  {
+    if (display2.init(26, 32)) return true; // ATOM
+    if (display2.init( 4, 13)) return true; // TimerCam
+  }
 
   return false;
 }
